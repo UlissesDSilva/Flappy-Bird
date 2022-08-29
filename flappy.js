@@ -40,9 +40,42 @@ function pairOfBarries(height, opening, x) {
   this.setX(x);
 }
 
-const teste = new pairOfBarries(700, 200, 58)
+function barriers(height, opening, width, space, notifyPoint) {
+  this.pairs = [
+    new pairOfBarries(height, opening, width),
+    new pairOfBarries(height, opening, width + space),
+    new pairOfBarries(height, opening, width + space * 2),
+    new pairOfBarries(height, opening, width + space * 3)
+  ]
 
-document.querySelector('[flappy]').appendChild(teste.element)
+  const displacement = 3;
+  
+  this.animate = () => {
+    this.pairs.forEach(pair => {
+      pair.setX(pair.getX() - displacement);
+
+      //When the berrier leaves the screen
+      if (pair.getX() < -pair.getWidth()) {
+        pair.setX(pair.getX() + space * this.pairs.length);
+        pair.drawOpening();
+      }
+
+      const middle = width / 2;
+      const crossedTheMiddle = pair.getX() + displacement >= middle && pair.getX() < middle;
+      crossedTheMiddle ?? notifyPoint()
+      
+    })
+  }
+}
+
+const barreiras = new barriers(700, 200, 1200, 400, 0)
+const area = document.querySelector('[flappy]')
+
+barreiras.pairs.forEach(pair => area.appendChild(pair.element))
+
+// setInterval(() => {
+//   barreiras.animate()
+// }, 20)
 
 
 {/* <img src="./imgs/passaro.png" alt="bird" class="bird">
