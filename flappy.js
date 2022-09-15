@@ -62,7 +62,8 @@ function barriers(height, opening, width, space, notifyPoint) {
 
       const middle = width / 2;
       const crossedTheMiddle = pair.getX() + displacement >= middle && pair.getX() < middle;
-      crossedTheMiddle ?? notifyPoint()
+
+      if(crossedTheMiddle) notifyPoint()
       
     })
   }
@@ -72,7 +73,7 @@ function bird(gameHeight) {
   let flying = false;
 
   this.element = newElement('img', 'bird');
-  this.element.src = 'img/passaro.png';
+  this.element.src = 'imgs/passaro.png';
 
   this.getPositionY = () => parseInt(this.element.style.bottom.split('px')[0]);
   this.setPositionY = (y) => this.element.style.bottom = `${y}px`;
@@ -100,20 +101,36 @@ function progress() {
   this.element = newElement('span', 'progress')
 
   this.updatePoints = (points) => {
-    this.element.innerHTMl = points;
+    this.element.innerHTML = points;
   }
 
   this.updatePoints(0);
 }
 
-const barreiras = new barriers(700, 200, 1200, 400, 0)
-const area = document.querySelector('[flappy]')
+function FlappyBBbird() {
+  let point = 0;
+  const area = document.querySelector('[flappy]')
+  const gameHeight = area.clientHeight
+  const gameWidth = area.clientWidth
 
-barreiras.pairs.forEach(pair => area.appendChild(pair.element))
+  const passaro = new bird(gameHeight);
+  const progresso = new progress();
+  const updatePoints = () => progresso.updatePoints(++point);
+  const barreiras = new barriers(gameHeight, 200, gameWidth, 400, updatePoints);
 
-// setInterval(() => {
-//   barreiras.animate()
-// }, 20)
+  area.appendChild(passaro.element)
+  area.appendChild(progresso.element)
+  barreiras.pairs.forEach(pair => area.appendChild(pair.element))
+
+  this.start = () => {
+    const timer = setInterval(() => {
+      barreiras.animate()
+      passaro.animate()
+    }, 20)
+  }
+}
+
+new FlappyBBbird().start()
 
 
 {/* <img src="./imgs/passaro.png" alt="bird" class="bird">
