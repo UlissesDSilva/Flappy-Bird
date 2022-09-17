@@ -40,7 +40,7 @@ function pairOfBarries(height, opening, x) {
   this.setX(x);
 }
 
-function barriers(height, opening, width, space, notifyPoint) {
+function barriers(height, opening, width, space, notifyPoint, teste) {
   this.pairs = [
     new pairOfBarries(height, opening, width),
     new pairOfBarries(height, opening, width + space),
@@ -48,7 +48,11 @@ function barriers(height, opening, width, space, notifyPoint) {
     new pairOfBarries(height, opening, width + space * 3)
   ]
 
-  const displacement = 3;
+  let displacement = 3;
+  this.increaseDifficulty = () => {
+    displacement++
+    console.log(displacement)
+  }
   
   this.animate = () => {
     this.pairs.forEach(pair => {
@@ -63,7 +67,9 @@ function barriers(height, opening, width, space, notifyPoint) {
       const middle = width / 2;
       const crossedTheMiddle = pair.getX() + displacement >= middle && pair.getX() < middle;
 
-      if(crossedTheMiddle) notifyPoint()
+      if(crossedTheMiddle) {
+        notifyPoint()
+      }
       
     })
   }
@@ -105,6 +111,36 @@ function progress() {
   }
 
   this.updatePoints(0);
+
+  this.getPonit = () => {
+    return this.element.innerHTML;
+  }
+
+}
+
+function overlaid(elementA, elementB) {
+  const a = elementA.getBoundingClientRect()
+  const b = elementB.getBoundingClientRect()
+
+  const horizontal = a.left + a.width >= b.left && b.left + b.width >= a.left;
+  const vertical = a.top + a.height >= b.top && b.top + b.height >= a.top;
+  
+  return horizontal && vertical;
+}
+
+function collision(bird, barriers) {
+  let collision = false;
+
+  barriers.pairs.forEach(pair => {
+    if(!collision) {
+      const higher = pair.higher.element;
+      const bottom = pair.bottom.element;
+
+      collision = overlaid(bird, higher) || overlaid(bird, bottom);
+    }
+  })
+
+  return collision;
 }
 
 function FlappyBBbird() {
@@ -112,37 +148,33 @@ function FlappyBBbird() {
   const area = document.querySelector('[flappy]')
   const gameHeight = area.clientHeight
   const gameWidth = area.clientWidth
-
+  
   const passaro = new bird(gameHeight);
   const progresso = new progress();
   const updatePoints = () => progresso.updatePoints(++point);
-  const barreiras = new barriers(gameHeight, 200, gameWidth, 400, updatePoints);
+  const getPoint = () => progresso.getPonit();
+  const barreiras = new barriers(gameHeight, 300, gameWidth, 400, updatePoints, getPoint);
 
   area.appendChild(passaro.element)
   area.appendChild(progresso.element)
   barreiras.pairs.forEach(pair => area.appendChild(pair.element))
 
+  this.collision = () => {
+  }
+  
   this.start = () => {
     const timer = setInterval(() => {
       barreiras.animate()
       passaro.animate()
+      if(collision(passaro.element, barreiras)){
+        clearInterval(timer)
+      }
     }, 20)
+
+    setInterval(() => {
+      barreiras.increaseDifficulty()
+    }, 1800000)
   }
 }
 
 new FlappyBBbird().start()
-
-
-{/* <img src="./imgs/passaro.png" alt="bird" class="bird">
-    <div class="pair-of-barries">
-      <div class="barrier">
-        <div class="body"></div>
-        <div class="edge"></div>
-      </div>
-
-      <div class="barrier">
-        <div class="edge"></div>
-        <div class="body"></div>
-      </div>
-    </div>
-    <div class="progress">100</div> */}
